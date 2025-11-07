@@ -7,6 +7,7 @@ import TrainingAndPlacements from './Pages/TrainingAndPlacements'
 import AboutUs from './Pages/AboutUs'
 import Recommendations from './Pages/Recommendations'
 import ReviewsPage from './Pages/ReviewsPage'
+import Test from './Pages/Test'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <GlobalStyles />
       <BrowserRouter>
         <Routes>
+          <Route path="test" element={<Test />} />
           <Route path="/" element={<AppLayout />}>
             <Route path="" element={<Home />} />
             <Route path="training-and-placements" element={<TrainingAndPlacements />} />

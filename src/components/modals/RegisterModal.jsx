@@ -1,14 +1,19 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { motion, AnimatePresence } from 'framer-motion'
+import { jobData } from '@/data/JobsData'
+import emailjs from 'emailjs-com'
+import { useRef } from 'react'
 
 // --- MAIN MODAL COMPONENT ---
 const RegisterModal = ({ setOpen }) => {
-  const [formData, setFormData] = useState({ fullName: '', mobileNumber: '', email: '' })
+  // const [formData, setFormData] = useState({ fullName: '', mobileNumber: '', email: '' })
+  const [formData, setFormData] = useState({ fullName: '', mobileNumber: '', email: '', jobId: '' })
   const [checkboxes, setCheckboxes] = useState({ terms: false, updates: false })
   const [resumeFile, setResumeFile] = useState(null)
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle') // idle, submitting, success
+  const formRef = useRef(null)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -66,6 +71,7 @@ const RegisterModal = ({ setOpen }) => {
 
   const validate = () => {
     let tempErrors = {}
+    if (!formData.jobId) tempErrors.jobId = 'Please select the job you are applying for.'
     if (!formData.fullName.trim()) tempErrors.fullName = 'Full name is required.'
     if (!formData.mobileNumber.trim()) tempErrors.mobileNumber = 'Mobile number is required.'
     else if (!/^\d{10}$/.test(formData.mobileNumber.trim()))
@@ -78,16 +84,48 @@ const RegisterModal = ({ setOpen }) => {
     return Object.keys(tempErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (validate()) {
-      setStatus('submitting')
-      // Mock API call - in real implementation, you'd handle file upload here
-      console.log('Form Data:', formData)
-      console.log('Resume File:', resumeFile)
-      setTimeout(() => {
-        setStatus('success')
-      }, 1500)
+    if (!validate()) return
+
+    setStatus('submitting')
+
+    // Resolve selected job details (if you store jobId)
+    const selectedJob = jobData.find((j) => j.id === Number(formData.jobId)) || {}
+    const jobTitle = selectedJob.title || ''
+    const company = selectedJob.company || ''
+
+    // Prepare any extra template params you want available inside your EmailJS template
+    const templateParams = {
+      fullName: formData.fullName,
+      mobileNumber: formData.mobileNumber,
+      email: formData.email,
+      job_title: jobTitle,
+      company: company,
+      subject: `Application for ${jobTitle} | ${company}`,
+    }
+
+    // Merge template params into a hidden input on the form OR use emailjs.sendForm (method below supports sending the whole form)
+    try {
+      // You must replace the three strings below with the real IDs from your EmailJS account
+      const SERVICE_ID = 'service_mgqahj3'
+      const TEMPLATE_ID = 'template_32gvr5d'
+      const USER_ID = 'qpVRsz-o8DssnLxaR'
+
+      // Option A: send the whole form (this will include the file input automatically)
+      // Note: emailjs.sendForm expects the form element reference
+      // const resp = await emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, USER_ID)
+
+      // Option B: if your template expects dynamic template params, you can use emailjs.send with templateParams
+      const resp = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, USER_ID)
+
+      console.log('EmailJS response:', resp)
+      setStatus('success')
+    } catch (err) {
+      console.error('Email send error:', err)
+      setStatus('idle')
+      // show error to user: setErrors or toast accordingly
+      setErrors((prev) => ({ ...prev, submit: 'Failed to send. Please try again later.' }))
     }
   }
 
@@ -124,7 +162,7 @@ const RegisterModal = ({ setOpen }) => {
               <p>Your request has been received. We will contact you shortly.</p>
             </SuccessMessage>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form ref={formRef} onSubmit={handleSubmit}>
               <FormGroup>
                 <FormLabel htmlFor="fullName">Full Name</FormLabel>
                 <Input
@@ -168,6 +206,25 @@ const RegisterModal = ({ setOpen }) => {
                   autoComplete="email"
                 />
                 {errors.email && <ErrorMessage>{errors.email}</ErrorMessage>}
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel htmlFor="jobId">Job Applying For</FormLabel>
+                <Select
+                  id="jobId"
+                  name="jobId"
+                  value={formData.jobId}
+                  onChange={handleChange}
+                  // style or className: match other inputs
+                >
+                  <option value="">Select job</option>
+                  {jobData.map((job) => (
+                    <option key={job.id} value={job.id}>
+                      {`${job.title} / ${job.company}`}
+                    </option>
+                  ))}
+                </Select>
+                {errors.jobId && <ErrorMessage>{errors.jobId}</ErrorMessage>}
               </FormGroup>
 
               {/* Resume Upload Field */}
@@ -456,6 +513,27 @@ const FormLabel = styled.label`
 `
 
 const Input = styled.input`
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #003380;
+    box-shadow: 0 0 0 2px rgba(0, 51, 128, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.7rem 0.9rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+`
+
+const Select = styled.select`
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #e2e8f0;

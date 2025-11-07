@@ -1,7 +1,7 @@
 export const jobData = [
   {
     id: 1,
-    company: 'HDFC Bank',
+    company: '       ++++++++++++++++++++++++',
     title: 'Deputy Manager Operational',
     qualification: 'Graduation Any Stream 50%',
     ageLimit: '21-28',
