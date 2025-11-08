@@ -3,26 +3,55 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 // Styled Components
+// const HeroContainer = styled.section`
+//   display: flex;
+//   align-items: center;
+//   align-items: flex-start;
+//   justify-content: center;
+//   min-height: 65vh;
+//   background-color: #ffffff;
+//   padding-left: 6rem;
+//   gap: 2rem;
+//   overflow: hidden;
+//   box-shadow: inset 0 -8px 0 #18009c;
+
+//   @media (max-width: 992px) {
+//     flex-direction: column;
+//     text-align: center;
+//     padding: 2rem 1.5rem;
+//     height: max-content;
+//   }
+// `
+
 const HeroContainer = styled.section`
   display: flex;
-  align-items: center;
-  align-items: flex-start;
   justify-content: center;
-  min-height: 65vh;
+  align-items: center;
   background-color: #ffffff;
-  /* background-color: #f7f6f6; */
   padding-left: 6rem;
-
   gap: 2rem;
   overflow: hidden;
+  box-shadow: inset 0 -8px 0 #18009c;
+  /* border: 2px solid green; */
 
+  /* default desktop */
+  min-height: 65vh;
+
+  /* 1) Short viewport fix: push content to the top and use padding instead of centering */
+  @media (max-height: 740px) and (min-width: 992px) {
+    min-height: auto; /* don’t lock to vh when height is small */
+    align-items: flex-start; /* no vertical centering */
+    padding-block: 0 2rem; /* create controlled top/bottom space */
+  }
+
+  /* existing mobile */
   @media (max-width: 992px) {
     flex-direction: column;
     text-align: center;
     padding: 2rem 1.5rem;
+    min-height: auto;
+    height: max-content;
   }
-
-  box-shadow: inset 0 -8px 0 #18009c;
 `
 
 const ContentWrapper = styled.div`
