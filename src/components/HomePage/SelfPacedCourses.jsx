@@ -10,7 +10,7 @@ const CoursesContainer = styled.section`
   flex-direction: column;
   align-items: center;
   @media (max-width: 1024px) {
-    padding: 3rem 1rem;
+    padding: 3rem 2rem;
   }
 `
 const SectionHeader = styled.div`
